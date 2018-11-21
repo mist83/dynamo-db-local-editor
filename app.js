@@ -293,8 +293,9 @@ var app = new Vue({
             } catch (err) {
                 vue.errorDetail = err.message;
                 vue.errorOpen = true;
-                vue.overlayEverything = false;
             }
+            
+            vue.overlayEverything = false;
         },
         dismissModal: function () {
             // Reset it to the original
