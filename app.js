@@ -371,12 +371,8 @@ var app = new Vue({
             vue.modalTitle = "Create new " + vue.selectedTable.schema.Table.TableName + " record";
             vue.editOpen = true;
         },
-        deleteTable: function () {
-            var vue = this;
-            alert("deleteTable: " + vue.selectedTable.schema.Table.TableName + "\n\nJustin can do this if he wants, I am SICK of HTML/CSS/JS/Vue!");
-        },
-        deleteRecord: function () {
-            alert("deleteRecord:\n\nI don't want to work on this hack job any more!\n\nJustin can do this if he wants, I am SICK of HTML/CSS/JS/Vue!")
+        unimplemented: function () {
+            alert("One of 3 things currently unimplemented\n(create table, delete table, delete row)\n\nJustin can do this if he wants, I am SICK of HTML/CSS/JS/Vue!");
         },
     }
 })

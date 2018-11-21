@@ -16,23 +16,24 @@
 
 <body style="background: whitesmoke;">
     <div id="app" style="display: none;">
-        <div style="float:left;">
-            <div id="leftbar" style="position: absolute; top: 0; bottom: 0; width: 320px; overflow-y: scroll;">
-                <ul class="list-group">
-                    <a href="#" class="list-group-item list-group-item-action" v-bind:class="{ active: table.isActive }"
-                        v-for="table in tables" v-on:click="clickTable(table);">
-                        <i class="fa fa-table" v-if="table.schema.Table.TableName !== &quot;&quot;"></i>
-                        <span> {{table.schema.Table.TableName}}</span>
-                    </a>
-                </ul>
-            </div>
+        <div style="text-align: center; position: absolute; top: 0; bottom: 80; width: 320px;">
+            <button class="btn btn-success" style="margin: 10px;" v-on:click="unimplemented()">Create New Table</button>
+        </div>
+        <div id="leftbar" style="position: absolute; top: 60; bottom: 0; width: 320px; overflow-y: scroll;">
+            <ul class="list-group">
+                <a href="#" class="list-group-item list-group-item-action" v-bind:class="{ active: table.isActive }"
+                    v-for="table in tables" v-on:click="clickTable(table);">
+                    <i class="fa fa-table" v-if="table.schema.Table.TableName !== &quot;&quot;"></i>
+                    <span> {{table.schema.Table.TableName}}</span>
+                </a>
+            </ul>
         </div>
 
         <div v-if="selectedTable.headers.length > 0">
             <div id="contentdiv" style="position: absolute; left: 320px; top:0; right: 0; overflow-y: scroll;">
                 <div style="margin: 20px;">
                     <h1 style="float: left;">{{selectedTable.schema.Table.TableName}}</h1>
-                    <button class="btn btn-danger" style="float: left; margin: 10px;" v-on:click="deleteTable()"><i
+                    <button class="btn btn-danger" style="float: left; margin: 10px;" v-on:click="unimplemented()"><i
                             class="fa fa-trash"></i> Delete</button>
                     <div style="clear: both"></div>
                     <h5><em>Only use this page for local DynamoDB development!</em></h5>
@@ -53,7 +54,7 @@
                 <div class="tab-content" id="myTabContent" style="background: white; ">
                     <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab" style="padding: 20px;">
                         <h4>// TODO: parse this and make it pretty (or determine doing so is useless)</h4>
-                        <pre style="background: whitesmoke;" >{{tableDescription}}</pre>
+                        <pre style="background: whitesmoke;">{{tableDescription}}</pre>
                     </div>
                     <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
                         <div style="float: left; padding: 20px;">
@@ -101,7 +102,7 @@
                                 <tbody id="tbody">
                                     <tr v-for="record in selectedTable.filteredRecords">
                                         <td style="width: 20px;"><i class="fa fa-trash" style="color: #dc3545; cursor: pointer;"
-                                                v-on:click="deleteRecord(record)"></i></td>
+                                                v-on:click="unimplemented()"></i></td>
                                         <td v-for="arrayItem in record.array" v-if="!showExpanded">
                                             <a href="#" v-if="arrayItem.isPK" v-on:click="openItem(record)">{{arrayItem.value}}</a>
                                             <span v-else>{{arrayItem.value}}</span>
