@@ -176,7 +176,6 @@ var app = new Vue({
 
                     var record = {
                         unmarshalled: unmarshalled,
-                        showExpanded: false,
                         text: JSON.stringify(unmarshalled, null, 2),
                         array: [],
                     };
@@ -191,7 +190,7 @@ var app = new Vue({
                             if (fullProperty.length > 32)
                                 prettyProperty = fullProperty.substr(0, 32).trim() + "...";
 
-                            record.array.push({ isPK: orderedProperties[property], value: { true: fullProperty, false: prettyProperty } });
+                            record.array.push({ isPK: orderedProperties[property], showExpanded: false, value: { true: fullProperty, false: prettyProperty } });
                         }
                         else
                             record.array.push({ value: { true: "", false: "" } });
@@ -279,6 +278,14 @@ var app = new Vue({
 
             vue.selectedTable.filteredRecords = sorted;
         },
+        expandCollapse: function (value) {
+            var vue = this;
+            for (var i = 0; i < vue.selectedTable.records.length; i++) {
+                for (var j = 0; j < vue.selectedTable.records[i].array.length; j++) {
+                    vue.selectedTable.records[i].array[j].showExpanded = value;
+                }
+            }
+        },
         openItem: function (record) {
             vue = this;
             vue.selectedTable.selectedRecord = record;
@@ -294,7 +301,7 @@ var app = new Vue({
                 vue.errorDetail = err.message;
                 vue.errorOpen = true;
             }
-            
+
             vue.overlayEverything = false;
         },
         dismissModal: function () {

@@ -43,8 +43,7 @@
                             aria-label="Search" v-model="selectedTable.filter">
                         <button class="btn btn-outline-success" v-on:click="runFilter()"><i class="fa fa-filter"></i>
                             Filter Records</button>
-                        <button data-toggle="dropdown" class="btn btn-outline-success dropdown-toggle"><span
-                                class="caret"></span></button>
+                        <button data-toggle="dropdown" class="btn btn-outline-success dropdown-toggle"><span class="caret"></span></button>
                         <ul class="dropdown-menu">
                             <li class="dropdown-item" style="cursor: pointer;" v-on:click="selectedTable.filter = &quot;record.ContentId === \&quot;26470\&quot;&quot;; runFilter()">record.ContentId
                                 === "26470"</li>
@@ -90,6 +89,14 @@
                         <button class="btn btn-success" style="float: left; margin: 20px;" v-on:click="createNewRecord()"><i
                                 class="fa fa-asterisk"></i>
                             Create new record</button>
+                        <span style="float:right; margin: 20px;">
+                            <button class="btn btn-success" v-on:click="expandCollapse(false)">
+                                <i class="fa fa-minus"></i> All
+                            </button>
+                            <button class="btn btn-success" v-on:click="expandCollapse(true)">
+                                <i class="fa fa-plus"></i> All
+                            </button>
+                        </span>
                         <div style="position: absolute; top: 120; right: 0; bottom: 0; left: 20; overflow-y: scroll; clear: both;">
                             <table class="table table-striped table-hover">
                                 <thead id="thead">
@@ -105,13 +112,24 @@
                                     </tr>
                                 </thead>
                                 <tbody id="tbody">
-                                    <tr v-for="record in selectedTable.filteredRecords" style="cursor: pointer;"
-                                        v-on:click="record.showExpanded = !record.showExpanded">
-                                        <td style="width: 20px;"><i class="fa fa-trash" style="color: #dc3545; cursor: pointer;"
-                                                v-on:click="unimplemented()"></i></td>
+                                    <tr v-for="record in selectedTable.filteredRecords">
+                                        <td style="width: 20px; cursor: pointer;"><i class="fa fa-trash" style="color: #dc3545; cursor: pointer;"
+                                                v-on:click="unimplemented();"></i></td>
                                         <td v-for="arrayItem in record.array">
-                                            <a href="#" v-if="arrayItem.isPK" v-on:click="record.showExpanded = !record.showExpanded; openItem(record)">{{arrayItem.value[record.showExpanded]}}</a>
-                                            <span v-else>{{arrayItem.value[record.showExpanded]}}</span>
+                                            <a href="#" v-if="arrayItem.isPK" v-on:click="openItem(record)">{{arrayItem.value[true]}}</a>
+                                            <span v-else>
+                                                <span v-if="arrayItem.value[true] == arrayItem.value[false]">{{arrayItem.value[true]}}</span>
+                                                <span v-else>
+                                                    <span v-if="arrayItem.showExpanded">
+                                                        <i class="fa fa-minus" style="cursor: pointer;" v-on:click="arrayItem.showExpanded = false"></i>
+                                                        {{arrayItem.value[true]}}
+                                                    </span>
+                                                    <span v-else>
+                                                        <i class="fa fa-plus" style="cursor: pointer;" v-on:click="arrayItem.showExpanded = true"></i>
+                                                        {{arrayItem.value[false]}}
+                                                    </span>
+                                                </span>
+                                            </span>
                                         </td>
                                     </tr>
                                 </tbody>
