@@ -6,19 +6,19 @@ var app = new Vue({
         selectedTable: {
             schema: {
                 Table: {
-                    TableName: "placeholder"
+                    TableName: "Select a Table"
                 }
             },
             headers: [],
             records: [],
-            filteredRecords: [],
+            sort: {},
+            filterApplied: false,
+            filter: "",
+            filteredRecords: []
         },
-        showExpanded: false,
         overlayEverything: false,
         editOpen: false,
         errorOpen: false,
-        sort: {},
-        filter: "",
     },
     methods: {
         refresh: function () {
@@ -34,10 +34,11 @@ var app = new Vue({
                 else {
                     for (var i = 0; i < data.TableNames.length; i++) {
                         vue.tables.push({
-                            isActive: false,
                             schema: { Table: { TableName: data.TableNames[i] } },
                             headers: [],
                             records: [],
+                            sort: {},
+                            filter: "",
                             filteredRecords: [],
                         });
                     }
@@ -49,18 +50,18 @@ var app = new Vue({
         clickTable: function (table) {
             var vue = this;
 
-            vue.sort = {};
-            vue.filter = "";
             vue.overlayEverything = true;
+
             vue.selectedTable = table;
 
+            // Reset everything about the table
+            vue.selectedTable.filter = "";
+            vue.selectedTable.filterApplied = null;
+            vue.selectedTable.sort = {};
             for (var i = 0; i < vue.tables.length; i++) {
-                vue.tables[i].isActive = false;
                 vue.tables[i].records = [];
-                vue.tables[i].selectedRecords = null;
             }
 
-            table.isActive = true;
             vue.describeTable();
         },
         describeTable: function () {
@@ -175,26 +176,25 @@ var app = new Vue({
 
                     var record = {
                         unmarshalled: unmarshalled,
+                        showExpanded: false,
                         text: JSON.stringify(unmarshalled, null, 2),
                         array: [],
-                        fullArray: [],
                     };
 
                     for (property in orderedProperties) {
                         if (record.unmarshalled.hasOwnProperty(property)) {
-                            var prettyProperty = "" + record.unmarshalled[property];
-                            if (prettyProperty.startsWith("[object Object]"))
-                                prettyProperty = JSON.stringify(record.unmarshalled);
+                            var fullProperty = "" + record.unmarshalled[property];
+                            if (fullProperty.startsWith("[object Object]"))
+                                fullProperty = JSON.stringify(record.unmarshalled);
 
-                            record.fullArray.push({ isPK: orderedProperties[property], value: prettyProperty });
+                            var prettyProperty = fullProperty;
+                            if (fullProperty.length > 32)
+                                prettyProperty = fullProperty.substr(0, 32).trim() + "...";
 
-                            if (prettyProperty.length > 32)
-                                prettyProperty = prettyProperty.substr(0, 32).trim() + "...";
-
-                            record.array.push({ isPK: orderedProperties[property], value: prettyProperty });
+                            record.array.push({ isPK: orderedProperties[property], value: { true: fullProperty, false: prettyProperty } });
                         }
                         else
-                            record.array.push("");
+                            record.array.push({ value: { true: "", false: "" } });
                     }
 
                     records.push(record);
@@ -203,19 +203,22 @@ var app = new Vue({
                 vue.selectedTable.records = JSON.parse(JSON.stringify(records));
                 vue.selectedTable.filteredRecords = JSON.parse(JSON.stringify(records));
 
+                vue.runFilter();
+                vue.runSort();
+
                 vue.overlayEverything = false;
             });
         },
         sortTable(column) {
             var vue = this;
 
-            if (!vue.sort || vue.sort.column !== column) {
-                vue.sort = { column: column, direction: -1 };
+            if (!vue.selectedTable.sort || vue.selectedTable.sort.column !== column) {
+                vue.selectedTable.sort = { column: column, direction: -1 };
             } else {
-                if (vue.sort.direction === 1)
-                    vue.sort = {};
+                if (vue.selectedTable.sort.direction === 1)
+                    vue.selectedTable.sort = {};
                 else
-                    vue.sort.direction = 1
+                    vue.selectedTable.sort.direction = 1
             }
 
             vue.runSort();
@@ -232,15 +235,15 @@ var app = new Vue({
 
             var vue = this;
 
-            if (!vue.sort.column) {
-                vue.filterRecords(); // Kind of a hack - just reusing the filter logic to reset things to normal
+            if (!vue.selectedTable.sort.column) {
+                vue.runFilter(); // Kind of a hack - just reusing the filter logic to reset things to normal
                 return;
             }
 
             function compare(a, b) {
                 try {
-                    var pa = a.unmarshalled[vue.sort.column];
-                    var pb = b.unmarshalled[vue.sort.column]
+                    var pa = a.unmarshalled[vue.selectedTable.sort.column];
+                    var pb = b.unmarshalled[vue.selectedTable.sort.column];
 
                     // can't just use "if (!pa)..." because there are some "0" values
                     if (pa === null || pa === undefined)
@@ -271,7 +274,7 @@ var app = new Vue({
 
             var sorted = vue.selectedTable.filteredRecords.sort(compare);
 
-            if (vue.sort.direction == 1)
+            if (vue.selectedTable.sort.direction == 1)
                 sorted = sorted.reverse();
 
             vue.selectedTable.filteredRecords = sorted;
@@ -327,17 +330,21 @@ var app = new Vue({
                 vue.overlayEverything = false;
             }
         },
-        filterRecords: function () {
+        runFilter: function () {
             var vue = this;
-            vue.sort = {};
+
+            if (vue.selectedTable.filter.trim() === "")
+                vue.selectedTable.filterApplied = null;
+            else
+                vue.selectedTable.filterApplied = vue.selectedTable.filter;
 
             try {
                 var records = [];
                 for (var i = 0; i < vue.selectedTable.records.length; i++) {
                     var record = vue.selectedTable.records[i].unmarshalled;
-                    var truth = eval(vue.filter);
+                    var truth = eval(vue.selectedTable.filter);
 
-                    if (vue.filter.trim() === "") {
+                    if (vue.selectedTable.filter.trim() === "") {
                         truth = true;
                     }
 
@@ -372,7 +379,7 @@ var app = new Vue({
             vue.editOpen = true;
         },
         unimplemented: function () {
-            alert("One of 3 things currently unimplemented\n(create table, delete table, delete row)\n\nJustin can do this if he wants, I am SICK of HTML/CSS/JS/Vue!");
+            alert("This is one of 3 things currently unimplemented but on a reasonable roadmap.\n\n- create table\n- delete table\n- delete row\n\nJustin can do this if he wants, I am SICK of HTML/CSS/JS/Vue!");
         },
     }
 })

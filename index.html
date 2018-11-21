@@ -2,90 +2,95 @@
 <title>DynamoDB Local Tool</title>
 
 <head>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
-        crossorigin="anonymous">
     <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" type="text/css" rel="stylesheet">
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
+        crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
         crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
         crossorigin="anonymous"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
         crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 </head>
 
 <body style="background: whitesmoke;">
     <div id="app" style="display: none;">
-        <div style="text-align: center; position: absolute; top: 0; bottom: 80; width: 320px;">
-            <button class="btn btn-success" style="margin: 10px;" v-on:click="unimplemented()">Create New Table</button>
-        </div>
-        <div id="leftbar" style="position: absolute; top: 60; bottom: 0; width: 320px; overflow-y: scroll;">
-            <ul class="list-group">
-                <a href="#" class="list-group-item list-group-item-action" v-bind:class="{ active: table.isActive }"
-                    v-for="table in tables" v-on:click="clickTable(table);">
-                    <i class="fa fa-table" v-if="table.schema.Table.TableName !== &quot;&quot;"></i>
-                    <span> {{table.schema.Table.TableName}}</span>
-                </a>
-            </ul>
-        </div>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <a class="navbar-brand" href="#">Local DynamoDB UI</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+                aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
 
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown"
+                            aria-haspopup="true" aria-expanded="false">
+                            {{selectedTable.schema.Table.TableName}}
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <a class="dropdown-item" href="#" v-on:click="unimplemented()">Create New Table</a>
+                            <div class="dropdown-divider"></div>
+                            <a v-for="table in tables" class="dropdown-item" v-on:click="clickTable(table);" href="#">{{table.schema.Table.TableName}}</a>
+                        </div>
+                    </li>
+                </ul>
+                <form class="form-inline my-2 my-lg-0" v-if="selectedTable.schema.Table.TableName !== 'Select a Table'">
+                    <div class="btn-group navbar-btn">
+                        <input class="form-control mr-sm-2" style="width: 600px;" type="search" placeholder="This filter uses JavaScript eval() with the record named 'record'"
+                            aria-label="Search" v-model="selectedTable.filter">
+                        <button class="btn btn-outline-success" v-on:click="runFilter()"><i class="fa fa-filter"></i>
+                            Filter Records</button>
+                        <button data-toggle="dropdown" class="btn btn-outline-success dropdown-toggle"><span
+                                class="caret"></span></button>
+                        <ul class="dropdown-menu">
+                            <li class="dropdown-item" style="cursor: pointer;" v-on:click="selectedTable.filter = &quot;record.ContentId === \&quot;26470\&quot;&quot;; runFilter()">record.ContentId
+                                === "26470"</li>
+                            <li class="dropdown-item" style="cursor: pointer;" v-on:click="selectedTable.filter = &quot;record.DurationSeconds < 200&quot;; runFilter()">record.DurationSeconds
+                                &lt; 200</li>
+                            <li class="dropdown-item" style="cursor: pointer;" v-on:click="selectedTable.filter = &quot;record.ManifestUrl.includes(\&quot;d78da9gi6b95g\&quot;)&quot;; runFilter()">record.ManifestUrl.includes("d78da9gi6b95g")</li>
+                        </ul>
+                    </div>
+                </form>
+            </div>
+        </nav>
         <div v-if="selectedTable.headers.length > 0">
-            <div id="contentdiv" style="position: absolute; left: 320px; top:0; right: 0; overflow-y: scroll;">
+            <div id="contentdiv" style="position: absolute; left: 0; top:60; right: 0; overflow-y: scroll;">
                 <div style="margin: 20px;">
-                    <h1 style="float: left;">{{selectedTable.schema.Table.TableName}}</h1>
-                    <button class="btn btn-danger" style="float: left; margin: 10px;" v-on:click="unimplemented()"><i
-                            class="fa fa-trash"></i> Delete</button>
-                    <div style="clear: both"></div>
                     <h5><em>Only use this page for local DynamoDB development!</em></h5>
                     <h6><em>You will get a much better experience with the Amazon web console for AWS hosted DynamoDB!</em></h6>
                 </div>
             </div>
-            <div style="position: absolute; left: 320; top: 150; right: 20; bottom: 20;">
+            <div style="position: absolute; left: 20; top: 140; right: 20; bottom: 0;">
                 <ul class="nav nav-tabs" id="myTab" role="tablist">
                     <li class="nav-item">
-                        <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab"
+                        <a class="nav-link active" id="schema-tab" data-toggle="tab" href="#schema" role="tab"
                             aria-controls="home" aria-selected="true">Schema</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile" role="tab" aria-controls="profile"
-                            aria-selected="false">Records</a>
+                        <a class="nav-link" id="records-tab" data-toggle="tab" href="#records" role="tab" aria-controls="profile"
+                            aria-selected="false"><i class="fa fa-filter" style="color: rgb(40, 167, 69)" v-if="selectedTable.filterApplied !== null"
+                                v-bind:title="'A filter is currently applied: ' + selectedTable.filter"></i> Records</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="admin-tab" data-toggle="tab" href="#admin" role="tab" aria-controls="home">Admin</a>
                     </li>
                 </ul>
-                <div class="tab-content" id="myTabContent" style="background: white; ">
-                    <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab" style="padding: 20px;">
-                        <h4>// TODO: parse this and make it pretty (or determine doing so is useless)</h4>
-                        <pre style="background: whitesmoke;">{{tableDescription}}</pre>
+                <div class="tab-content" id="myTabContent">
+                    <div class="tab-pane fade show active" id="schema" role="tabpanel" aria-labelledby="home-tab" style="padding: 20px;">
+                        <div style="position: absolute; top: 60; right: 0; bottom: 0; left: 20; overflow-y: scroll; clear: both;">
+                            <h4>// TODO: parse this and make it pretty (or make a case for why doing so is useless)</h4>
+                            <br>
+                            <pre>{{tableDescription}}</pre>
+                        </div>
                     </div>
-                    <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
-                        <div style="float: left; padding: 20px;">
-                            <button class="btn btn-success" v-on:click="createNewRecord()"><i class="fa fa-asterisk"></i>
-                                Create new record</button>
-                            <button v-if="showExpanded === false" class="btn btn-primary" v-on:click="showExpanded = true"><i
-                                    class="fa fa-expand"></i> Expand
-                                record content</button>
-                            <button v-if="showExpanded === true" class="btn btn-primary" v-on:click="showExpanded = false">Collapse
-                                record content</button>
-                        </div>
-                        <div style="float: right; padding: 20px; text-align: right;">
-                            <div class="input-group mb-3">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text">Filter</span>
-                                </div>
-                                <input type="text" class="form-control" style="width: 600px;" placeholder="This filter uses JavaScript eval() with the record named 'record'"
-                                    v-model="filter">
-                                <div class="input-group-append">
-                                    <button class="btn btn-outline-secondary" type="button" v-on:click="filterRecords()"><i
-                                            class="fa fa-filter"></i> Run</button>
-                                </div>
-                            </div>
-                            examples:
-                            <code style="cursor: pointer;" v-on:click="filter = &quot;record.ContentId === \&quot;26470\&quot;&quot;">record.ContentId === "26470"</code>
-                            |
-                            <code style="cursor: pointer;" v-on:click="filter = &quot;record.DurationSeconds < 200&quot;">record.DurationSeconds < 200</code>
-                            |
-                            <code style="cursor: pointer;" v-on:click="filter = &quot;record.ManifestUrl.includes(\&quot;d78da9gi6b95g\&quot;)&quot;">record.ManifestUrl.includes("d78da9gi6b95g")</code>
-                        </div>
-                        <div style="position: absolute; top: 160; right: 0; bottom: 0; left: 20; overflow-y: scroll; clear: both;">
+                    <div class="tab-pane fade" id="records" role="tabpanel" aria-labelledby="profile-tab">
+                        <button class="btn btn-success" style="float: left; margin: 20px;" v-on:click="createNewRecord()"><i
+                                class="fa fa-asterisk"></i>
+                            Create new record</button>
+                        <div style="position: absolute; top: 120; right: 0; bottom: 0; left: 20; overflow-y: scroll; clear: both;">
                             <table class="table table-striped table-hover">
                                 <thead id="thead">
                                     <tr>
@@ -93,28 +98,29 @@
                                         <th v-for="header in selectedTable.headers">
                                             <a href="#" style="white-space:nowrap; cursor: pointer; color: black;"
                                                 v-on:click="sortTable(header)">{{header}}
-                                                <i class="fa fa-sort-down" v-if="sort.direction == -1 && sort.column == header"></i>
-                                                <i class="fa fa-sort-up" v-if="sort.direction == 1 && sort.column == header"></i>
+                                                <i class="fa fa-sort-down" v-if="selectedTable.sort.direction == -1 && selectedTable.sort.column == header"></i>
+                                                <i class="fa fa-sort-up" v-if="selectedTable.sort.direction == 1 && selectedTable.sort.column == header"></i>
                                             </a>
                                         </th>
                                     </tr>
                                 </thead>
                                 <tbody id="tbody">
-                                    <tr v-for="record in selectedTable.filteredRecords">
+                                    <tr v-for="record in selectedTable.filteredRecords" style="cursor: pointer;"
+                                        v-on:click="record.showExpanded = !record.showExpanded">
                                         <td style="width: 20px;"><i class="fa fa-trash" style="color: #dc3545; cursor: pointer;"
                                                 v-on:click="unimplemented()"></i></td>
-                                        <td v-for="arrayItem in record.array" v-if="!showExpanded">
-                                            <a href="#" v-if="arrayItem.isPK" v-on:click="openItem(record)">{{arrayItem.value}}</a>
-                                            <span v-else>{{arrayItem.value}}</span>
-                                        </td>
-                                        <td v-for="arrayItem in record.fullArray" v-else>
-                                            <a href="#" v-if="arrayItem.isPK" v-on:click="openItem(record)">{{arrayItem.value}}</a>
-                                            <span v-else>{{arrayItem.value}}</span>
+                                        <td v-for="arrayItem in record.array">
+                                            <a href="#" v-if="arrayItem.isPK" v-on:click="record.showExpanded = !record.showExpanded; openItem(record)">{{arrayItem.value[record.showExpanded]}}</a>
+                                            <span v-else>{{arrayItem.value[record.showExpanded]}}</span>
                                         </td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
+                    </div>
+                    <div class="tab-pane fade" id="admin" role="tabpanel" aria-labelledby="profile-tab">
+                        <button class="btn btn-danger" style="margin: 20px;" v-on:click="unimplemented()"><i class="fa fa-trash"></i>
+                            Delete table</button>
                     </div>
                 </div>
             </div>
