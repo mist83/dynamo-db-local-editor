@@ -385,6 +385,37 @@ var app = new Vue({
             vue.modalTitle = "Create new " + vue.selectedTable.schema.Table.TableName + " record";
             vue.editOpen = true;
         },
+        deleteRecord: function (record) {
+            if (!confirm("Do you want to delete this record?\n\n" + JSON.stringify(record.unmarshalled, null, 2).substr(0, 512).trim()+"...")) {
+                return;
+            }
+
+            var vue = this;
+
+            vue.overlayEverything = true;
+
+            var params = {
+                TableName: vue.selectedTable.schema.Table.TableName,
+                Key: {}
+            }
+
+            // Read from the schema, set the only properties that delete cares about
+            for (var i = 0; i < vue.selectedTable.schema.Table.KeySchema.length; i++) {
+                var attributeName = vue.selectedTable.schema.Table.KeySchema[i].AttributeName;
+                params.Key[attributeName] = record.unmarshalled[attributeName];
+            }
+
+            new AWS.DynamoDB.DocumentClient().delete(params, function (err) {
+                if (err) {
+                    vue.errorDetail = err;
+                    vue.errorOpen = true;
+                } else {
+                    vue.fillTable();
+                }
+
+                vue.overlayEverything = false;
+            });
+        },
         unimplemented: function () {
             alert("This is one of 3 things currently unimplemented but on a reasonable roadmap.\n\n- create table\n- delete table\n- delete row\n\nJustin can do this if he wants, I am SICK of HTML/CSS/JS/Vue!");
         },

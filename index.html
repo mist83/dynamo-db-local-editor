@@ -120,7 +120,7 @@
                                             <i v-else class="fa fa-angle-down"></i>
                                         </td>
                                         <td style="width: 20px; cursor: pointer;"><i class="fa fa-trash" style="color: #dc3545; cursor: pointer;"
-                                                v-on:click="unimplemented();"></i></td>
+                                                v-on:click="deleteRecord(record);"></i></td>
                                         <td v-for="arrayItem in record.array">
                                             <a href="#" v-if="arrayItem.isPK" v-on:click="openItem(record)">{{arrayItem.value[true]}}</a>
                                             <span v-else>
